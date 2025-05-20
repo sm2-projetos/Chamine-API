@@ -1,0 +1,84 @@
+Sub EnviarParaAPI()
+
+    Dim http As Object
+    Dim url As String
+    Dim jsonBody As String
+    Dim logData As String
+    Dim ws As Worksheet
+    Dim wsPerfil As Worksheet
+    Dim ultimaLinha As Integer
+    Dim i As Integer
+
+    ' Definir a URL da API
+    url = "http://localhost/chamine/api2/apinova.php"
+
+    ' Definir as planilhas
+    Set ws = ActiveSheet
+    Set wsPerfil = ThisWorkbook.Sheets("Perfil") ' Referência direta à planilha Perfil
+
+    ' Capturar data e hora do momento da execução
+    Dim dataHoraExecucao As String
+    dataHoraExecucao = Format(Now, "yyyy-MM-dd HH:mm:ss")
+
+    ' Montar JSON com os dados do perfil
+    jsonBody = "{""data_hora_execucao"": """ & dataHoraExecucao & """, ""perfil"": {"
+    jsonBody = jsonBody & """Projeto"": """ & wsPerfil.Range("C5").Value & """," & _
+                 """Fonte"": """ & wsPerfil.Range("E5").Value & """," & _
+                 """Data"": """ & wsPerfil.Range("G5").Value & """," & _
+                 """Equipe"": """ & wsPerfil.Range("J5").Value & """," & _
+                 """Empresa"": """ & wsPerfil.Range("C6").Value & """," & _
+                 """Cidade"": """ & wsPerfil.Range("J6").Value & """," & _
+                 """Processo"": """ & wsPerfil.Range("C7").Value & """," & _
+                 """Parametros"": """ & wsPerfil.Range("J7").Value & """," & _
+                 """Montante"": """ & wsPerfil.Range("C8").Value & """," & _
+                 """Jusante"": """ & wsPerfil.Range("E8").Value & """," & _
+                 """Diametro1"": """ & wsPerfil.Range("G8").Value & """," & _
+                 """Diametro2"": """ & wsPerfil.Range("G9").Value & """," & _
+                 """Diametro3"": """ & wsPerfil.Range("G10").Value & """," & _
+                 """DiametroMedio"": """ & wsPerfil.Range("I8").Value & """," & _
+                 """Jdc"": """ & wsPerfil.Range("K8").Value & """," & _
+                 """Mdc"": """ & wsPerfil.Range("K9").Value & """," & _
+                 """AreaChamine"": """ & wsPerfil.Range("K10").Value & """," & _
+                 """Comprimento"": """ & wsPerfil.Range("C9").Value & """," & _
+                 """Diametroequivalente"": """ & wsPerfil.Range("E9").Value & """," & _
+                 """NumeroDePontos"": """ & wsPerfil.Range("C11").Value & """," & _
+                 """NumeroDeEixos"": """ & wsPerfil.Range("E11").Value & """," & _
+                 """NumeroDePontosPorEixo"": """ & wsPerfil.Range("G11").Value & """," & _
+                 """TempoTotalColeta"": """ & wsPerfil.Range("I11").Value & """," & _
+                 """TempoporPonto"": """ & wsPerfil.Range("K11").Value & """}, ""coletas"": ["
+
+    ' Assumindo que os parâmetros estão na coluna C e os valores da coleta nas colunas E, F, G
+    ultimaLinha = 25 ' Defina o número correto de linhas
+
+   For i = 4 To ultimaLinha
+    jsonBody = jsonBody & "{""parametro"": """ & CStr(ws.Cells(i, 3).Value) & """," & _
+                           """unidade"": """ & CStr(ws.Cells(i, 4).Value) & """," & _
+                           """coleta_1"": """ & CStr(ws.Cells(i, 5).Value) & """," & _
+                           """coleta_2"": """ & CStr(ws.Cells(i, 6).Value) & """," & _
+                           """coleta_3"": """ & CStr(ws.Cells(i, 7).Value) & """},"
+Next i
+
+
+    ' Remover a última vírgula extra
+    If Right(jsonBody, 1) = "," Then
+        jsonBody = Left(jsonBody, Len(jsonBody) - 1)
+    End If
+
+    ' Fechar JSON
+    jsonBody = jsonBody & "]}"
+
+    ' Criar objeto HTTP para envio da requisição
+    Set http = CreateObject("MSXML2.XMLHTTP")
+    With http
+        .Open "POST", url, False
+        .setRequestHeader "Content-Type", "application/json"
+        .Send jsonBody
+    End With
+
+    ' Verificar a resposta da API
+    MsgBox "Resposta da API: " & http.responseText
+
+    ' Liberar objeto HTTP
+    Set http = Nothing
+
+End Sub

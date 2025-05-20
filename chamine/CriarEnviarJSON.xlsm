@@ -1,0 +1,146 @@
+Sub CriarEnviarJSON()
+    Dim wsPerfil As Worksheet
+    Dim wsResultados As Worksheet
+    Dim jsonPerfil As String
+    Dim jsonResultados As String
+    Dim jsonFinal As String
+    Dim coleta As String
+    Dim i As Integer
+    Dim http As Object
+    Dim url As String
+    Dim filePath As String
+    Dim fileNum As Integer
+
+    ' Definir as planilhas
+    Set wsPerfil = ThisWorkbook.Sheets("Perfil")
+    Set wsResultados = ThisWorkbook.Sheets("Resultados")
+
+    ' Preencher JSON do Perfil
+    jsonPerfil = "{""Projeto"":""" & wsPerfil.Range("C5").Value & """," & _
+                 """Fonte"":""" & wsPerfil.Range("E5").Value & """," & _
+                 """Data"":""" & wsPerfil.Range("G5").Value & """," & _
+                 """Equipe"":""" & wsPerfil.Range("J5").Value & """," & _
+                 """Empresa"":""" & wsPerfil.Range("C6").Value & """," & _
+                 """Cidade"":""" & wsPerfil.Range("J6").Value & """," & _
+                 """Processo"":""" & wsPerfil.Range("C7").Value & """," & _
+                 """Parametros"":""" & wsPerfil.Range("J7").Value & """," & _
+                 """Montante"":""" & wsPerfil.Range("C8").Value & """," & _
+                 """Jusante"":""" & wsPerfil.Range("E8").Value & """," & _
+                 """Diametro1"":""" & wsPerfil.Range("G8").Value & """," & _
+                 """Diametro2"":""" & wsPerfil.Range("G9").Value & """," & _
+                 """Diametro3"":""" & wsPerfil.Range("G10").Value & """," & _
+                 """DiametroMedio"":""" & wsPerfil.Range("I8").Value & """," & _
+                 """Jdc"":""" & wsPerfil.Range("K8").Value & """," & _
+                 """Mdc"":""" & wsPerfil.Range("K9").Value & """," & _
+                 """AreaChamine"":""" & wsPerfil.Range("K10").Value & """," & _
+                 """Comprimento"":""" & wsPerfil.Range("C9").Value & """," & _
+                 """Diametroequivalente"":""" & wsPerfil.Range("E9").Value & """," & _
+                 """NumeroDePontos"":""" & wsPerfil.Range("C11").Value & """," & _
+                 """NumeroDeEixos"":""" & wsPerfil.Range("E11").Value & """," & _
+                 """NumeroDePontosPorEixo"":""" & wsPerfil.Range("G11").Value & """," & _
+                 """TempoTotalColeta"":""" & wsPerfil.Range("I11").Value & """," & _
+                 """TempoporPonto"":""" & wsPerfil.Range("K11").Value & """}"
+
+    ' Preencher JSON das Coletas
+    jsonResultados = "{"
+    For i = 1 To 3
+        coleta = """Coleta" & i & """:{"
+        coleta = coleta & """DataDaColeta"":{""Unidade"":""" & wsResultados.Range("D4").Value & """,""Valor"":""" & wsResultados.Cells(4, 4 + i).Value & """},"
+        coleta = coleta & """HorarioInicial"":{""Unidade"":""" & wsResultados.Range("D5").Value & """,""Valor"":""" & wsResultados.Cells(5, 4 + i).Value & """},"
+        coleta = coleta & """Horariofinal"":{""Unidade"":""" & wsResultados.Range("D6").Value & """,""Valor"":""" & wsResultados.Cells(6, 4 + i).Value & """},"
+        coleta = coleta & """Temperatura"":{""Unidade"":""" & wsResultados.Range("D7").Value & """,""Valor"":""" & wsResultados.Cells(7, 4 + i).Value & """},"
+        coleta = coleta & """Umidade"":{""Unidade"":""" & wsResultados.Range("D8").Value & """,""Valor"":""" & wsResultados.Cells(8, 4 + i).Value & """},"
+        coleta = coleta & """O2"":{""Unidade"":""" & wsResultados.Range("D9").Value & """,""Valor"":""" & wsResultados.Cells(9, 4 + i).Value & """},"
+        coleta = coleta & """TaxaDeEmissaoCO2"":{""Unidade"":""" & wsResultados.Range("D10").Value & """,""Valor"":""" & wsResultados.Cells(10, 4 + i).Value & """},"
+        coleta = coleta & """TaxaDeEmissaoO2"":{""Unidade"":""" & wsResultados.Range("D11").Value & """,""Valor"":""" & wsResultados.Cells(11, 4 + i).Value & """},"
+        coleta = coleta & """TaxaDeEmissaoCO"":{""Unidade"":""" & wsResultados.Range("D12").Value & """,""Valor"":""" & wsResultados.Cells(12, 4 + i).Value & """},"
+        coleta = coleta & """TaxaDeEmissaoN2"":{""Unidade"":""" & wsResultados.Range("D13").Value & """,""Valor"":""" & wsResultados.Cells(13, 4 + i).Value & """},"
+        coleta = coleta & """Velocidade"":{""Unidade"":""" & wsResultados.Range("D14").Value & """,""Valor"":""" & wsResultados.Cells(14, 4 + i).Value & """},"
+        coleta = coleta & """Vazao1"":{""Unidade"":""" & wsResultados.Range("D15").Value & """,""Valor"":""" & wsResultados.Cells(15, 4 + i).Value & """},"
+        coleta = coleta & """Vazao2"":{""Unidade"":""" & wsResultados.Range("D16").Value & """,""Valor"":""" & wsResultados.Cells(16, 4 + i).Value & """},"
+        coleta = coleta & """ConcentracaoDeMaterialParticulado1"":{""Unidade"":""" & wsResultados.Range("D17").Value & """,""Valor"":""" & wsResultados.Cells(17, 4 + i).Value & """},"
+        coleta = coleta & """ConcentracaoDeMaterialParticulado2"":{""Unidade"":""" & wsResultados.Range("D18").Value & """,""Valor"":""" & wsResultados.Cells(18, 4 + i).Value & """},"
+        coleta = coleta & """TaxaDeEmissaoDeMaterialParticulado"":{""Unidade"":""" & wsResultados.Range("D19").Value & """,""Valor"":""" & wsResultados.Cells(19, 4 + i).Value & """},"
+        coleta = coleta & """ConcentracaoDeMonoxidoDeCarbono1"":{""Unidade"":""" & wsResultados.Range("D20").Value & """,""Valor"":""" & wsResultados.Cells(20, 4 + i).Value & """},"
+        coleta = coleta & """ConcentracaoDeMonoxidoDeCarbono2"":{""Unidade"":""" & wsResultados.Range("D21").Value & """,""Valor"":""" & wsResultados.Cells(21, 4 + i).Value & """},"
+        coleta = coleta & """ConcentracaoDeDioxidoDeNitrogenio1"":{""Unidade"":""" & wsResultados.Range("D22").Value & """,""Valor"":""" & wsResultados.Cells(22, 4 + i).Value & """},"
+        coleta = coleta & """ConcentracaoDeDioxidoDeNitrogenio2"":{""Unidade"":""" & wsResultados.Range("D23").Value & """,""Valor"":""" & wsResultados.Cells(23, 4 + i).Value & """},"
+        coleta = coleta & """TaxaDeEmissaoDeDioxidoDeNitrogenio"":{""Unidade"":""" & wsResultados.Range("D24").Value & """,""Valor"":""" & wsResultados.Cells(24, 4 + i).Value & """},"
+        coleta = coleta & """Isocinetica"":{""Unidade"":""" & wsResultados.Range("D25").Value & """,""Valor"":""" & wsResultados.Cells(25, 4 + i).Value & """},"
+        coleta = coleta & """NumeroDoBequer"":{""Unidade"":""" & wsResultados.Range("D29").Value & """,""Valor"":""" & wsResultados.Cells(29, 4 + i).Value & """},"
+        coleta = coleta & """NumeroDoFiltro"":{""Unidade"":""" & wsResultados.Range("D30").Value & """,""Valor"":""" & wsResultados.Cells(30, 4 + i).Value & """},"
+        coleta = coleta & """MassaDoBequer"":{""Unidade"":""" & wsResultados.Range("D31").Value & """,""Valor"":""" & wsResultados.Cells(31, 4 + i).Value & """},"
+        coleta = coleta & """MassaDoFiltro"":{""Unidade"":""" & wsResultados.Range("D32").Value & """,""Valor"":""" & wsResultados.Cells(32, 4 + i).Value & """},"
+        coleta = coleta & """MassaTotal"":{""Unidade"":""" & wsResultados.Range("D33").Value & """,""Valor"":""" & wsResultados.Cells(33, 4 + i).Value & """},"
+        coleta = coleta & """Volume"":{""Unidade"":""" & wsResultados.Range("D34").Value & """,""Valor"":""" & wsResultados.Cells(34, 4 + i).Value & """},"
+        coleta = coleta & """ConcentracaoDeMaterialParticulado3"":{""Unidade"":""" & wsResultados.Range("D35").Value & """,""Valor"":""" & wsResultados.Cells(35, 4 + i).Value & """},"
+        coleta = coleta & """IncertezaDeMedicaoDeMaterialParticulado"":{""Unidade"":""" & wsResultados.Range("D36").Value & """,""Valor"":""" & wsResultados.Cells(36, 4 + i).Value & """}"
+        coleta = coleta & "},"
+        jsonResultados = jsonResultados & coleta
+    Next i
+    jsonResultados = Left(jsonResultados, Len(jsonResultados) - 1) ' Remover a última vírgula
+    jsonResultados = jsonResultados & "}"
+
+    ' Preencher JSON do Nivel
+    Dim jsonNivel As String
+    jsonNivel = "{"
+    jsonNivel = jsonNivel & """DataDaColeta"":{""Media"":""" & wsResultados.Range("H4").Value & """,""Limite"":""" & wsResultados.Range("I4").Value & """},"
+    jsonNivel = jsonNivel & """HorarioInicial"":{""Media"":""" & wsResultados.Range("H5").Value & """,""Limite"":""" & wsResultados.Range("I5").Value & """},"
+    jsonNivel = jsonNivel & """Horariofinal"":{""Media"":""" & wsResultados.Range("H6").Value & """,""Limite"":""" & wsResultados.Range("I6").Value & """},"
+    jsonNivel = jsonNivel & """Temperatura"":{""Media"":""" & wsResultados.Range("H7").Value & """,""Limite"":""" & wsResultados.Range("I7").Value & """},"
+    jsonNivel = jsonNivel & """Umidade"":{""Media"":""" & wsResultados.Range("H8").Value & """,""Limite"":""" & wsResultados.Range("I8").Value & """},"
+    jsonNivel = jsonNivel & """O2"":{""Media"":""" & wsResultados.Range("H9").Value & """,""Limite"":""" & wsResultados.Range("I9").Value & """},"
+    jsonNivel = jsonNivel & """TaxaDeEmissaoCO2"":{""Media"":""" & wsResultados.Range("H10").Value & """,""Limite"":""" & wsResultados.Range("I10").Value & """},"
+    jsonNivel = jsonNivel & """TaxaDeEmissaoO2"":{""Media"":""" & wsResultados.Range("H11").Value & """,""Limite"":""" & wsResultados.Range("I11").Value & """},"
+    jsonNivel = jsonNivel & """TaxaDeEmissaoCO"":{""Media"":""" & wsResultados.Range("H12").Value & """,""Limite"":""" & wsResultados.Range("I12").Value & """},"
+    jsonNivel = jsonNivel & """TaxaDeEmissaoN2"":{""Media"":""" & wsResultados.Range("H13").Value & """,""Limite"":""" & wsResultados.Range("I13").Value & """},"
+    jsonNivel = jsonNivel & """Velocidade"":{""Media"":""" & wsResultados.Range("H14").Value & """,""Limite"":""" & wsResultados.Range("I14").Value & """},"
+    jsonNivel = jsonNivel & """Vazao1"":{""Media"":""" & wsResultados.Range("H15").Value & """,""Limite"":""" & wsResultados.Range("I15").Value & """},"
+    jsonNivel = jsonNivel & """Vazao2"":{""Media"":""" & wsResultados.Range("H16").Value & """,""Limite"":""" & wsResultados.Range("I16").Value & """},"
+    jsonNivel = jsonNivel & """ConcentracaoDeMaterialParticulado1"":{""Media"":""" & wsResultados.Range("H17").Value & """,""Limite"":""" & wsResultados.Range("I17").Value & """},"
+    jsonNivel = jsonNivel & """ConcentracaoDeMaterialParticulado2"":{""Media"":""" & wsResultados.Range("H18").Value & """,""Limite"":""" & wsResultados.Range("I18").Value & """},"
+    jsonNivel = jsonNivel & """TaxaDeEmissaoDeMaterialParticulado"":{""Media"":""" & wsResultados.Range("H19").Value & """,""Limite"":""" & wsResultados.Range("I19").Value & """},"
+    jsonNivel = jsonNivel & """ConcentracaoDeMonoxidoDeCarbono1"":{""Media"":""" & wsResultados.Range("H20").Value & """,""Limite"":""" & wsResultados.Range("I20").Value & """},"
+    jsonNivel = jsonNivel & """ConcentracaoDeMonoxidoDeCarbono2"":{""Media"":""" & wsResultados.Range("H21").Value & """,""Limite"":""" & wsResultados.Range("I21").Value & """},"
+    jsonNivel = jsonNivel & """ConcentracaoDeDioxidoDeNitrogenio1"":{""Media"":""" & wsResultados.Range("H22").Value & """,""Limite"":""" & wsResultados.Range("I22").Value & """},"
+    jsonNivel = jsonNivel & """ConcentracaoDeDioxidoDeNitrogenio2"":{""Media"":""" & wsResultados.Range("H23").Value & """,""Limite"":""" & wsResultados.Range("I23").Value & """},"
+    jsonNivel = jsonNivel & """TaxaDeEmissaoDeDioxidoDeNitrogenio"":{""Media"":""" & wsResultados.Range("H24").Value & """,""Limite"":""" & wsResultados.Range("I24").Value & """},"
+    jsonNivel = jsonNivel & """Isocinetica"":{""Media"":""" & wsResultados.Range("H25").Value & """,""Limite"":""" & wsResultados.Range("I25").Value & """},"
+    jsonNivel = jsonNivel & """NumeroDoBequer"":{""Branco"":""" & wsResultados.Range("H29").Value & """},"
+    jsonNivel = jsonNivel & """NumeroDoFiltro"":{""Branco"":""" & wsResultados.Range("H30").Value & """},"
+    jsonNivel = jsonNivel & """MassaDoBequer"":{""Branco"":""" & wsResultados.Range("H31").Value & """},"
+    jsonNivel = jsonNivel & """MassaDoFiltro"":{""Branco"":""" & wsResultados.Range("H32").Value & """},"
+    jsonNivel = jsonNivel & """MassaTotal"":{""Branco"":""" & wsResultados.Range("H33").Value & """},"
+    jsonNivel = jsonNivel & """Volume"":{""Branco"":""" & wsResultados.Range("H34").Value & """},"
+    jsonNivel = jsonNivel & """ConcentracaoDeMaterialParticulado3"":{""Branco"":""" & wsResultados.Range("H35").Value & """},"
+    jsonNivel = jsonNivel & """IncertezaDeMedicaoDeMaterialParticulado"":{""Branco"":""" & wsResultados.Range("H36").Value & """}"
+    jsonNivel = jsonNivel & "}"
+
+    ' Adicionar JSONs ao JSON final
+    jsonFinal = "{" & """Perfil"":" & jsonPerfil & "," & """Resultados"":" & jsonResultados & "," & """Nivel"":" & jsonNivel & "}"
+
+    ' Especificar o caminho do arquivo
+    filePath = "C:\xampp\htdocs\logsChamine\arquivo.json"
+
+    ' Criar e escrever no arquivo JSON
+    fileNum = FreeFile
+    Open filePath For Output As #fileNum
+    Print #fileNum, jsonFinal
+    Close #fileNum
+
+    ' Enviar JSON para a API
+    url = "http://localhost/chamine/index.php"
+    Set http = CreateObject("MSXML2.XMLHTTP")
+    With http
+        .Open "POST", url, False
+        .setRequestHeader "Content-Type", "application/json"
+        .send jsonFinal
+    End With
+
+    ' Verificar resposta da API
+    If http.Status = 200 Then
+        MsgBox "Dados enviados com sucesso!"
+    Else
+        MsgBox "Erro ao enviar dados: " & http.Status & " - " & http.statusText
+    End If
+End Sub
