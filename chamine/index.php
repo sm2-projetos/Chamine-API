@@ -2,8 +2,8 @@
 // Configuração do banco de dados
 $host = "localhost";
 $user = "root"; // Altere conforme sua configuração
-$password = "195575"; // Altere conforme sua configuração
-$database = "chamine"; // Nome do banco de dados
+$password = "Z!X@c3v4"; // Altere conforme sua configuração
+$database = "sistemachamine"; // Nome do banco de dados
 
 // Conectar ao banco
 $conn = new mysqli($host, $user, $password, $database);

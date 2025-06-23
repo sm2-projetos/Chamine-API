@@ -8,7 +8,7 @@ Sub EnviarParaAPI()
     Dim i As Integer
 
     ' URL da API
-    url = "http://localhost/chamine/api2/apinova.php"
+    url = "http://localhost:8000/chamine/api2/apinova.php"
 
     ' Definir as planilhas
     Set ws = ActiveSheet

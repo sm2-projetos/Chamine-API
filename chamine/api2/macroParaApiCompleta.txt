@@ -1,0 +1,264 @@
+Sub ExecutarEnvioCompleto()
+    ' 1. Enviar os dados (JSON)
+    Call EnviarParaAPI
+
+    ' 2. Gerar imagens das planilhas (como prints das áreas definidas)
+    Call EnviarTodasPlanilhasComoImagens
+
+    MsgBox "Envio completo concluído com sucesso!", vbInformation
+End Sub
+
+Sub EnviarParaAPI()
+    Dim http As Object
+    Dim url As String
+    Dim jsonBody As String
+    Dim ws As Worksheet
+    Dim wsPerfil As Worksheet
+    Dim ultimaLinha As Integer
+    Dim i As Integer
+
+    ' URL da API
+    url = "http://localhost:8080/chamine/api2/apinova.php"
+
+    ' Definir as planilhas
+    Set ws = ActiveSheet
+    Set wsPerfil = ThisWorkbook.Sheets("Perfil")
+
+    ' Capturar data e hora do momento da execução
+    Dim dataHoraExecucao As String
+    dataHoraExecucao = Format(Now, "yyyy-MM-dd HH:mm:ss")
+
+    ' Montar JSON com os dados do perfil
+    jsonBody = "{""data_hora_execucao"": """ & dataHoraExecucao & """, ""perfil"": {"
+    
+    ' Capturar e tratar valores do perfil
+    jsonBody = jsonBody & """Projeto"": """ & TrataValor(wsPerfil.Range("C5").Value) & """," & _
+                         """Fonte"": """ & TrataValor(wsPerfil.Range("E5").Value) & """," & _
+                         """Data"": """ & TrataData(wsPerfil.Range("G5").Value) & """," & _
+                         """Equipe"": """ & TrataValor(wsPerfil.Range("J5").Value) & """," & _
+                         """Empresa"": """ & TrataValor(wsPerfil.Range("C6").Value) & """," & _
+                         """Cidade"": """ & TrataValor(wsPerfil.Range("J6").Value) & """," & _
+                         """Processo"": """ & TrataValor(wsPerfil.Range("C7").Value) & """," & _
+                         """Parametros"": """ & TrataValor(wsPerfil.Range("J7").Value) & """," & _
+                         """Montante"": """ & TrataValor(wsPerfil.Range("C8").Value) & """," & _
+                         """Jusante"": """ & TrataValor(wsPerfil.Range("E8").Value) & """," & _
+                         """DiametroMedio"": """ & TrataValor(wsPerfil.Range("I8").Value) & """," & _
+                         """Jdc"": """ & TrataValor(wsPerfil.Range("K8").Value) & """," & _
+                         """Mdc"": """ & TrataValor(wsPerfil.Range("K9").Value) & """," & _
+                         """AreaChamine"": """ & TrataValor(wsPerfil.Range("K10").Value) & """," & _
+                         """Comprimento"": """ & TrataValor(wsPerfil.Range("C9").Value) & """," & _
+                         """Diametroequivalente"": """ & TrataValor(wsPerfil.Range("E9").Value) & """," & _
+                         """NumeroDePontos"": """ & TrataValor(wsPerfil.Range("C11").Value) & """," & _
+                         """NumeroDeEixos"": """ & TrataValor(wsPerfil.Range("E11").Value) & """," & _
+                         """NumeroDePontosPorEixo"": """ & TrataValor(wsPerfil.Range("G11").Value) & """," & _
+                         """TempoTotalColeta"": """ & TrataValor(wsPerfil.Range("I11").Value) & """," & _
+                         """TempoporPonto"": """ & TrataValor(wsPerfil.Range("K11").Value) & """}, ""coletas"": ["
+
+    ' Definir última linha da coleta (se for fixo 25, pode deixar assim)
+    ultimaLinha = 25
+
+    ' Construir JSON com os dados das coletas
+    For i = 4 To ultimaLinha
+        jsonBody = jsonBody & "{""parametro"": """ & TrataValor(ws.Cells(i, 3).Value) & """," & _
+                               """unidade"": """ & TrataValor(ws.Cells(i, 4).Value) & """," & _
+                               """coleta_1"": """ & TrataValor(ws.Cells(i, 5).Value) & """," & _
+                               """coleta_2"": """ & TrataValor(ws.Cells(i, 6).Value) & """," & _
+                               """coleta_3"": """ & TrataValor(ws.Cells(i, 7).Value) & """},"
+    Next i
+
+    ' Remover a última vírgula extra
+    If Right(jsonBody, 1) = "," Then
+        jsonBody = Left(jsonBody, Len(jsonBody) - 1)
+    End If
+
+    ' Fechar JSON
+    jsonBody = jsonBody & "]}"
+
+    ' Criar objeto HTTP para envio da requisição
+    Set http = CreateObject("MSXML2.XMLHTTP")
+    With http
+        .Open "POST", url, False
+        .SetRequestHeader "Content-Type", "application/json"
+        .Send jsonBody
+    End With
+
+    ' Verificar a resposta da API
+    MsgBox "Resposta da API: " & http.ResponseText
+
+    ' Liberar objeto HTTP
+    Set http = Nothing
+End Sub
+
+Function TrataValor(valor As Variant) As String
+    If IsEmpty(valor) Or IsNull(valor) Then
+        TrataValor = ""
+    Else
+        ' Remover quebras de linha
+        TrataValor = Replace(CStr(valor), """", "'")
+        TrataValor = Replace(TrataValor, vbCrLf, " ") ' substitui Enter por espaço
+        TrataValor = Replace(TrataValor, vbLf, " ")    ' só para garantir
+    End If
+End Function
+Function TrataData(valor As Variant) As String
+    If IsDate(valor) Then
+        TrataData = Format(valor, "yyyy-mm-dd")
+    Else
+        TrataData = ""
+    End If
+End Function
+
+Sub EnviarTodasPlanilhasComoImagens()
+    Call SalvarPlanilhaComoImagemPorIntervalo("Perfil", "A1:K37", "perfil.png")
+    Call SalvarPlanilhaComoImagemPorIntervalo("1º Coleta", "A1:N43", "coleta1.png")
+    Call SalvarPlanilhaComoImagemPorIntervalo("2º Coleta", "A1:N43", "coleta2.png")
+    Call SalvarPlanilhaComoImagemPorIntervalo("3º Coleta", "A1:N43", "coleta3.png")
+    Call SalvarPlanilhaComoImagemPorIntervalo("Cálculos", "A1:J35", "calculos.png")
+    Call SalvarGraficoComoImagem("Gráf MP", "grafico_mp.png")
+    Call SalvarGraficoComoImagem("Gráf CO", "grafico_co.png")
+    Call SalvarGraficoComoImagem("Gráf NOX", "grafico_nox.png")
+    'Call EnviarImagemParaLaravel("C:\sm2\goron.png", "goron.png")
+End Sub
+
+Sub SalvarPlanilhaComoImagemPorIntervalo(sheetName As String, intervalo As String, nomeImagem As String)
+    Dim wsOrigem As Worksheet
+    Dim rng As Range
+    Dim chartObj As ChartObject
+    Dim projetoNumero As String
+    Dim ImagemNome As String
+    Dim caminhoImagem As String
+
+    ' Configurar planilha e intervalo
+    Set wsOrigem = ThisWorkbook.Sheets(sheetName)
+    Set rng = wsOrigem.Range(intervalo)
+    wsOrigem.Activate
+    DoEvents
+
+    If Application.WorksheetFunction.CountA(rng) = 0 Then
+        MsgBox "Intervalo vazio na planilha: " & sheetName
+        Exit Sub
+    End If
+
+    projetoNumero = ThisWorkbook.Sheets("Perfil").Range("C5").Value
+    ImagemNome = sheetName & "_" & projetoNumero & ".png"
+    caminhoImagem = Environ$("TEMP") & "\" & ImagemNome
+
+    ' Copiar intervalo como imagem
+    rng.CopyPicture Appearance:=xlScreen, Format:=xlPicture
+    Application.Wait Now + TimeValue("0:00:01")
+
+    ' Criar gráfico temporário do mesmo tamanho
+    Set chartObj = wsOrigem.ChartObjects.Add( _
+        Left:=rng.Left, _
+        Top:=rng.Top, _
+        Width:=rng.Width + 5, _
+        Height:=rng.Height + 5)
+
+    ' Ativar gráfico e colar imagem
+    chartObj.Activate
+    chartObj.Chart.Paste
+    DoEvents
+    Application.Wait Now + TimeValue("0:00:01")
+
+    ' Exportar imagem
+    chartObj.Chart.Export Filename:=caminhoImagem, FilterName:="PNG"
+
+    ' Apagar gráfico temporário
+    chartObj.Delete
+
+    ' Enviar e remover imagem
+    Call EnviarImagemParaLaravel(caminhoImagem, ImagemNome)
+    Kill caminhoImagem
+End Sub
+
+
+
+
+
+
+
+
+Sub SalvarGraficoComoImagem(sheetName As String, nomeImagem As String)
+     Dim caminhoImagem As String
+    Dim chartSheet As Chart
+
+    ' Caminho do arquivo temporário
+    caminhoImagem = Environ$("TEMP") & "\" & nomeImagem
+
+    Set chartSheet = ThisWorkbook.Sheets(sheetName)
+    chartSheet.Export Filename:=caminhoImagem, FilterName:="PNG"
+
+        ' Envia a imagem
+    Call EnviarImagemParaLaravel(caminhoImagem, nomeImagem)
+
+        ' Apaga imagem temporária
+    Kill caminhoImagem
+End Sub
+
+Sub EnviarImagemParaLaravel(caminhoImagem As String, nomeImagem As String)
+    Dim http As Object
+    Dim boundary As String
+    Dim CRLF As String
+    Dim body As String
+    Dim fileData() As Byte
+    Dim stream As Object
+    Dim bodyBytes() As Byte
+    Dim temp() As Byte
+
+    ' Criar boundary único
+    boundary = "----VBAFormBoundary" & Format(Now, "yyyymmddhhnnss")
+    CRLF = vbCrLf
+
+    ' Carregar o arquivo como bytes
+    Set stream = CreateObject("ADODB.Stream")
+    stream.Type = 1 ' Binary
+    stream.Open
+    stream.LoadFromFile caminhoImagem
+    fileData = stream.Read
+    stream.Close
+
+    ' Criar cabeçalho do multipart
+    body = "--" & boundary & CRLF
+    body = body & "Content-Disposition: form-data; name=""imagem""; filename=""" & nomeImagem & """" & CRLF
+    body = body & "Content-Type: image/png" & CRLF & CRLF
+
+    ' Converter cabeçalho para bytes
+    bodyBytes = StrConv(body, vbFromUnicode)
+
+    ' Concatenar: cabeçalho + imagem + rodapé
+    ReDim temp(0 To UBound(bodyBytes) + UBound(fileData) + 1000)
+    Dim i As Long, pos As Long
+
+    ' Copiar cabeçalho
+    For i = 0 To UBound(bodyBytes)
+        temp(pos) = bodyBytes(i)
+        pos = pos + 1
+    Next
+
+    ' Copiar imagem
+    For i = 0 To UBound(fileData)
+        temp(pos) = fileData(i)
+        pos = pos + 1
+    Next
+
+    ' Rodapé
+    Dim footer As String
+    footer = CRLF & "--" & boundary & "--" & CRLF
+    Dim footerBytes() As Byte
+    footerBytes = StrConv(footer, vbFromUnicode)
+
+    For i = 0 To UBound(footerBytes)
+        temp(pos) = footerBytes(i)
+        pos = pos + 1
+    Next
+
+    ReDim Preserve temp(0 To pos - 1)
+
+    ' Enviar requisição
+    Set http = CreateObject("WinHttp.WinHttpRequest.5.1")
+    http.Open "POST", "http://localhost:8000/api/salvar-imagens", False
+    http.SetRequestHeader "Content-Type", "multipart/form-data; boundary=" & boundary
+    http.SetRequestHeader "Authorization", "Bearer 1234567890"
+    http.Send temp
+
+    MsgBox "Resposta: " & http.ResponseText
+End Sub

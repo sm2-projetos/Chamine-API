@@ -24,11 +24,12 @@ if (!$data) {
 
 // Configuração do banco de dados (ajuste conforme necessário)
 $host = "localhost";
-$dbname = "chamine";
+$dbname = "sistemachamine";
 $username = "root";
-$password = "195575";
+$password = "Z!X@c3v4";
 
 // Conectar ao banco de dados
+
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
